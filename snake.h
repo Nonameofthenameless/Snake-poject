@@ -85,9 +85,54 @@ typedef struct {
 
 
 }scoreentry;
+typedef union {
+	int asint;
+	float asfloat; //float realni tip 2
+	char asbytes[4];
+}gamevalue;
+typedef struct {
+	snake Snake;
+	point food;
+	int score;
+	int isrunning;
+	gamevalue spare;
+
+}gamestate;
+//exterm globalna deklaracija varijabla 8
+extern int g_highscore;
+extern scoreentry* g_scoreboard;
+//amički alocirano 16
+extern int g_scorecout;
+int loadscores(void);
+int savescores(void);
+int backupscores(void);
+int delscoresentry(int index);
+void listscores(sortchoice sortBy);
+void insetscore(const char* name, int score);
+void initgame(gamestate* gs);
+void rungame(gamestate* gs);
+void handleint(gamestate* gs);
+void updategame(gamestate* gs);
+void drawgame(const gamestate* gs);
+void freegame(gamestate* gs);
+
+void showmainmenue(void);
+void showscoremenu(void);
+void showrules(void);
+void showdelmenu(void);
+
+void safefree(void** ptr);
+int confirmaction(const char* msg);
+void printerror(const char* context);
+int comparescoredesc(const void* a, const void* b);
+int comparescorename(const void* a, const void* b);
+int comparescoredate(const void* a, const void* b);
+scoreentry* findscore(const char* name);
+void sortscoresby(sortchoice choice);
+//pokazivač nafunkciju 2i6
+typedef int(*cmpfn)(const void*, const void*);
+// rekurzivna deklaracija 25
+int binaryserchscore(const scoreentry* arr, int lo, int hi, int target);
 
 
-
-
-#endif 
-
+#endif
