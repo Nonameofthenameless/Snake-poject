@@ -43,9 +43,9 @@ int get_ch(void);
 typedef enum
 {
 	dir_up = 0,
-	dri_down,
-	dri_left,
-	dri_right,
+	dir_down,
+	dir_left,
+	dir_right,
 
 }direction;
 typedef enum {
