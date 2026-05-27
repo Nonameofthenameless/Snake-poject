@@ -1,29 +1,322 @@
-// crud insetz 1
-//cjelobrojni i tip 2
- //long dovoljan za time t 2
-//float realni tip 2
+// crud insetz 1  game.c lijija 199
+if (gs->score > 0) {
+		insetscore(playername, gs->score);
+		printf("result saved in %s\n", score_file);
 
-//enum tipovi 4
-//staticka lokalna varijabla broj odigranh partija 6
-
-//exterm globalna deklaracija varijabla 8
-//inline helper funkcije 9
-//makro  funkcija 9
-// enmu menue 11
-//citanje s tipkovnice 12
-//inicijalizacija igre 13
-
-//crtanje plja 13
+	}
+	freegame(gs);
+	printf("\n press enter to continue ...");
+	fflush(stdout);
+	getchar();
 
 
+}
+//cjelobrojni i tip 2 snake.h linija 71
+typedef struct {
+	int x; 
+	int y;
+}point;
+ //long dovoljan za time t 2 snake.h linija 83
+typedef struct {
+	char playername[name_len];
+	int score;
+	long timestamp; 
+	direction Direction;
 
-// ažuriranje logike 13
 
-	//statičko polje 15
-	//pomaknuti staticko polje 15
-	//amički alocirano 16
-// ciscenje resursa 17
-// ciscenje resursa 18
-//oslobođavanje globalne memorije prije izlaza17 
-//oslobođavanje globalne memorije prije izlaza 18
+}scoreentry;
+//float realni tip 2 snake.h linija 90
+typedef union {
+	int asint;
+	float asfloat; //float realni tip 2
+	char asbytes[4];
+}gamevalue;
+// unija 4 game.c linija 47
+gs->score = 0;
+	gs->isrunning = 1;
+	
+	gs->spare.asint = s_gamesplayed;
+	placefood(gs);
+	s_gamesplayed++;
+//enum tipovi 4snake.h linija 43
+typedef enum
+{
+	dir_up = 0,
+	dir_down,
+	dir_left,
+	dir_right,
+
+}direction;
+//staticka lokalna varijabla broj odigranh partija 6 game.c linija 3 
+static int s_gamesplayed = 0;
+//exterm globalna deklaracija varijabla 8 snake.h linija 102
+extern int g_highscore;
+extern scoreentry* g_scoreboard;
+//inline helper funkcije 9 game.c linija 5
+static inline int pointequal(point a, point b) {
+	return(a.x == b.x && a.y == b.y);
+}
+//makro  funkcija 9  game.c lijija 139
+	if (!in_bounds(newhead.x, newhead.y)) {
+		gs->isrunning = 0;
+		return;
+	}
+	for (int i = 0; i < gs->Snake.length; i++) {
+		if (pointequal(gs->Snake.cells[i], newhead)) {
+			gs->isrunning = 0;
+			return;
+		}
+	}
+	int ate = pointequal(newhead, gs->food);
+//makro funkcije 9 snake.h linija 38
+#define MIN(a,b) ((a)<(b) ? (a):(b))
+#define MAX(a,b) ((a)>(b) ? (a):(b))
+#define in_bounds(x,y)((x)>=0 && (x)<board_w && (y)<board_h)
+#define score_how_hungry 10
+// makro const  11 snake.h linija 29
+#define board_w 20
+#define board_h 20
+#define max_snak (board_w * board_h)
+#define max_scores 10
+#define name_len 32
+#define score_file "scores.dat"
+#define backupscore_files "its_just_one_of_those_days.dat"
+#define ticks_ms 150
+//citanje s tipkovnice 12 game.c linija 92
+void handleinput(gamestate* gs) {
+	if (gs == NULL || !kb_hit())return;
+	int ch = get_ch();
+#ifndef _WIN32
+	if (ch = 27) {
+		int c2 = get_ch();
+		if (c2 == '[') {
+			int c3 = get_ch();
+			switch (c3)
+			{
+			case 'A':if (gs->Snake.Direction != dir_down) gs->Snake.Direction = dir_up; break;
+			case 'B':if (gs->Snake.Direction != dir_up) gs->Snake.Direction = dir_down; break;
+
+			case 'C':if (gs->Snake.Direction != dir_left) gs->Snake.Direction = dir_right; break;
+			case 'B':if (gs->Snake.Direction != dir_right) gs->Snake.Direction = dir_left; break;
+			}
+		}
+		return;
+			}
+
+	
+#endif // !_WIN32
+	switch (ch) {
+	case 'w':case 'W':if (gs->Snake.Direction != dir_down) gs->Snake.Direction = dir_up; break;
+	case 's':case 'S':if (gs->Snake.Direction != dir_up) gs->Snake.Direction = dir_down; break;
+
+	case 'd':case 'D':if (gs->Snake.Direction != dir_left) gs->Snake.Direction = dir_right; break;
+	case 'a':case 'A':if (gs->Snake.Direction != dir_right) gs->Snake.Direction = dir_left; break;
+	case 'q':case 'Q':gs->isrunning = 0; break;
+	default:break;
+	}
+	
+}
+//inicijalizacija igre 13  game.c lijija 28
+void initgame(gamestate* gs) {
+	if (gs == NULL)return;
+	//zastita parametra 14
+	memset(gs, 0, sizeof(gamestate));
+	//anuliranj 18
+	gs->Snake.length = 3;
+	gs->Snake.Direction = dir_right;
+	gs->Snake.cells[0] = (point){
+		board_w / 2, board_h / 2
+	};
+	gs->Snake.cells[1] = (point){
+		board_w / 2 - 1,board_h / 2
+	};
+	gs->Snake.cells[2] = (point){
+		board_w / 2 - 2,board_h / 2
+	};
+		gs->score = 0;
+		gs->isrunning = 1;
+		//unija 4
+		gs->spare.asint = s_gamesplayed;
+		placefood(gs);
+		s_gamesplayed++;
+}
+// ažuriranje logike 13  game.c lijija 125
+void updategame(gamestate* gs) {
+	if (gs == NULL || !gs->isrunning)return;
+	point newhead = gs->Snake.cells[0];
+	switch (gs->Snake.Direction) {
+	case dir_up: newhead.y--; break;
+
+	case dir_down: newhead.y++; break;
+
+	case dir_left: newhead.x--; break;
+
+	case dir_right: newhead.x++; break;
+	default: break;
+	}
+//crtanje polja 13 game.c  53
+void drawgame(const gamestate* gs) {
+	if (gs == NULL) return;
+	clear_screan();
+	printf("+");
+	for (int x = 0; x < board_w; x++)printf("-");
+	printf("+\n");
+	for (int y = 0; y < board_h; y++) {
+		printf("|");
+		for (int x = 0; x < board_w; x++) {
+			point cur = { x,y };
+			if (pointequal(cur, gs->food)) {
+				printf("%s", "\U+1F40D");//help whit head
+			}
+			else if (pointequal(cur, gs->food)) {
+				printf("%s", "U+1F34E");
+			}
+			else
+			{
+				int isbody = 0;
+				for (int i = 1; i < gs->Snake.length; i++) {
+					if (pointequal(gs->Snake.cells[i], cur)) {
+						isbody = 1;
+						break;
+					}
+				}
+				printf(isbody ? "%s", "U+1F7E9" : "");
+
+			}
+		}
+		printf("|\n");
+	
+	}
+	printf("+");
+	for (int x = 0; x < board_w; x++) printf("-");
+	printf("+\n");
+	printf("points:%-6d record: %-6d round %d\n", gs->score, g_highscore, s_gamesplayed);
+	printf("controls w/a/s/d or arrow keys  | Q= quit \n");
+}
+//zastita parametra 14 game.c linija 30
+if (gs == NULL)return;
+//statičko polje 15 snake.h linija 75
+typedef struct {//statičko polje 15
+	point cells[max_snak];
+	int length;
+	direction Direction;
+
+}snake;
+//pomaknuti staticko polje 15  game.c lijija 152
+if (!ate) {
+		memmove(&gs->Snake.cells[1], &gs->Snake.cells[0], (size_t)(gs->Snake.length - 1) * sizeof(point));
+	}
+	else {
+		if (gs->Snake.length < max_snak)
+		{
+			memmove(&gs->Snake.cells[1], &gs->Snake.cells[0],
+				(size_t)gs->Snake.length * sizeof(point));
+			gs->Snake.length++;
+		}
+		else {
+			gs->isrunning = 0;
+			return;
+
+		}
+		gs->score += score_how_hungry;
+		placefood(gs);
+	}
+	gs->Snake.cells[0] = newhead;
+
+}
+//amički alocirano 16 snake.h linija 105
+extern int g_scorecout;
+int loadscores(void);
+int savescores(void);
+int backupscores(void);
+int delscoresentry(int index);
+void listscores(sortchoice sortBy);
+void insetscore(const char* name, int score);
+void initgame(gamestate* gs);
+void rungame(gamestate* gs);
+void handleint(gamestate* gs);
+void updategame(gamestate* gs);
+void drawgame(const gamestate* gs);
+void freegame(gamestate* gs);
+
+void showmainmenue(void);
+void showscoremenu(void);
+void showrules(void);
+void showdelmenu(void);
+
+void safefree(void** ptr);
+int confirmaction(const char* msg);
+void printerror(const char* context);
+int comparescoredesc(const void* a, const void* b);
+int comparescorename(const void* a, const void* b);
+int comparescoredate(const void* a, const void* b);
+scoreentry* findscore(const char* name);
+void sortscoresby(sortchoice choice);
+// ciscenje resursa 17  game.c lijija 174
+void freegame(gamestate* gs) {
+	if (gs == NULL)return;
+	memset(gs, 0, sizeof(gamestate));
+
+}
+void rungame(gamestate* gs) {
+	if (gs == NULL)return;
+	char playername[name_len];
+	printf("\n insert name:");
+	fflush(stdout);
+	if (fgets(playername, name_len, stdin) == NULL) {
+		strncpy(playername, "unkknown", name_len - 1);
+}
+	playername[strcspn(playername, "\n")] = '\0';
+	if (playername[0] == '\0')strncpy(playername, "player", name_len - 1);
+	initgame(gs);
+	while (gs->isrunning) {
+		drawgame(gs);
+		handleinput(gs);
+		updategame(gs);
+		sleep_ms(ticks_ms);
+	}
+	drawgame(gs);
+	printf("\n game over  \n score %d\n\n", gs->score);
+// ciscenje resursa 18  game.c lijija 174
+void freegame(gamestate* gs) {
+	if (gs == NULL)return;
+	memset(gs, 0, sizeof(gamestate));
+
+}
+void rungame(gamestate* gs) {
+	if (gs == NULL)return;
+	char playername[name_len];
+	printf("\n insert name:");
+	fflush(stdout);
+	if (fgets(playername, name_len, stdin) == NULL) {
+		strncpy(playername, "unkknown", name_len - 1);
+}
+	playername[strcspn(playername, "\n")] = '\0';
+	if (playername[0] == '\0')strncpy(playername, "player", name_len - 1);
+	initgame(gs);
+	while (gs->isrunning) {
+		drawgame(gs);
+		handleinput(gs);
+		updategame(gs);
+		sleep_ms(ticks_ms);
+	}
+	drawgame(gs);
+	printf("\n game over  \n score %d\n\n", gs->score);
+// anuliranje 18 game.c linija 18
+//oslobođavanje globalne memorije prije izlaza17  main.c lijija 7
+safefree((void**)&g_scoreboard);
+	printf("\nthank you so much for to playing my game bye bye\n\n ");
+	return 0;
+}
+//oslobođavanje globalne memorije prije izlaza 18 main.c linija 7
+safefree((void**)&g_scoreboard);
+	printf("\nthank you so much for to playing my game bye bye\n\n ");
+	return 0;
+}
+//rekurzivna deklaracija 25 snake.h linija 135
+int binaryserchscore(const scoreentry* arr, int lo, int hi, int target);
+
+
+#endif
+
 	
