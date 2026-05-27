@@ -1,0 +1,29 @@
+// crud insetz 1
+//cjelobrojni i tip 2
+ //long dovoljan za time t 2
+//float realni tip 2
+
+//enum tipovi 4
+//staticka lokalna varijabla broj odigranh partija 6
+
+//exterm globalna deklaracija varijabla 8
+//inline helper funkcije 9
+//makro  funkcija 9
+// enmu menue 11
+//citanje s tipkovnice 12
+//inicijalizacija igre 13
+
+//crtanje plja 13
+
+
+
+// ažuriranje logike 13
+
+	//statičko polje 15
+	//pomaknuti staticko polje 15
+	//amički alocirano 16
+// ciscenje resursa 17
+// ciscenje resursa 18
+//oslobođavanje globalne memorije prije izlaza17 
+//oslobođavanje globalne memorije prije izlaza 18
+	
