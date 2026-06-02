@@ -3,7 +3,6 @@
 #ifndef _GNU_SORCE 
 #define _GNU_SORCE
 #endif // !_GNU_SORCE 
-#pragma GCC diagnostic ignored "-wunused result"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,14 +11,14 @@
 #include <conio.h>
 #include <windows.h>
 #define clear_screan() system("cls");
-#define seep_ms(ms) sleep(ms)
+#define sleep_ms(ms) Sleep(ms)
 #define kb_hit() _kbhit()
 #define get_ch() _getch()
 #else
 #include <unistd.h>
 #include <termios.h>
 #define clear_screan() system("cls");
-#define seep_ms(ms) usleep((ms)*1000U)
+#define sleep_ms(ms) usleep((ms)*1000U)
 int kb_hit(void);
 int get_ch(void);
 #define kb_hit() _kbhit()
@@ -108,10 +107,10 @@ int savescores(void);
 int backupscores(void);
 int delscoresentry(int index);
 void listscores(sortchoice sortBy);
-void insetscore(const char* name, int score);
+void insertscore(const char* name, int score);
 void initgame(gamestate* gs);
 void rungame(gamestate* gs);
-void handleint(gamestate* gs);
+void handleinput(gamestate* gs);
 void updategame(gamestate* gs);
 void drawgame(const gamestate* gs);
 void freegame(gamestate* gs);

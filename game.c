@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+ï»¿#define _CRT_SECURE_NO_WARNINGS
 #include "snake.h"
 //staticka lokalna varijabla broj odigranh partija 6
 static int s_gamesplayed = 0;
@@ -34,13 +34,13 @@ void initgame(gamestate* gs) {
 	gs->Snake.length = 3;
 	gs->Snake.Direction = dir_right;
 	gs->Snake.cells[0] = (point){
-		board_w / 2, board_h / 2
+		board_w / 5, board_h / 5
 	};
 	gs->Snake.cells[1] = (point){
-		board_w / 2 - 1,board_h / 2
+		board_w / 5 - 1,board_h / 5
 	};
 	gs->Snake.cells[2] = (point){
-		board_w / 2 - 2,board_h / 2
+		board_w / 5 - 2,board_h / 5
 	};
 	gs->score = 0;
 	gs->isrunning = 1;
@@ -60,11 +60,11 @@ void drawgame(const gamestate* gs) {
 		printf("|");
 		for (int x = 0; x < board_w; x++) {
 			point cur = { x,y };
-			if (pointequal(cur, gs->food)) {
-				printf("%s", "\U+1F40D");//help whit head
+			if (pointequal(cur, gs->Snake.cells[0])) {
+				printf("@");//help whit head
 			}
 			else if (pointequal(cur, gs->food)) {
-				printf("%s", "U+1F34E");
+				printf("*");
 			}
 			else
 			{
@@ -75,12 +75,12 @@ void drawgame(const gamestate* gs) {
 						break;
 					}
 				}
-				printf(isbody ? "%s", "U+1F7E9" : "");
+				printf(isbody ? "o": " ");
 
 			}
 		}
 		printf("|\n");
-	
+
 	}
 	printf("+");
 	for (int x = 0; x < board_w; x++) printf("-");
@@ -103,13 +103,13 @@ void handleinput(gamestate* gs) {
 			case 'B':if (gs->Snake.Direction != dir_up) gs->Snake.Direction = dir_down; break;
 
 			case 'C':if (gs->Snake.Direction != dir_left) gs->Snake.Direction = dir_right; break;
-			case 'B':if (gs->Snake.Direction != dir_right) gs->Snake.Direction = dir_left; break;
+			case 'D':if (gs->Snake.Direction != dir_right) gs->Snake.Direction = dir_left; break;
 			}
 		}
 		return;
-			}
+	}
 
-	
+
 #endif // !_WIN32
 	switch (ch) {
 	case 'w':case 'W':if (gs->Snake.Direction != dir_down) gs->Snake.Direction = dir_up; break;
@@ -120,9 +120,9 @@ void handleinput(gamestate* gs) {
 	case 'q':case 'Q':gs->isrunning = 0; break;
 	default:break;
 	}
-	
+
 }
-// ažuriranje logike 13
+// aï¿½uriranje logike 13
 void updategame(gamestate* gs) {
 	if (gs == NULL || !gs->isrunning)return;
 	point newhead = gs->Snake.cells[0];
@@ -183,7 +183,7 @@ void rungame(gamestate* gs) {
 	fflush(stdout);
 	if (fgets(playername, name_len, stdin) == NULL) {
 		strncpy(playername, "unkknown", name_len - 1);
-}
+	}
 	playername[strcspn(playername, "\n")] = '\0';
 	if (playername[0] == '\0')strncpy(playername, "player", name_len - 1);
 	initgame(gs);
@@ -197,7 +197,7 @@ void rungame(gamestate* gs) {
 	printf("\n game over  \n score %d\n\n", gs->score);
 	// crud insetz 1
 	if (gs->score > 0) {
-		insetscore(playername, gs->score);
+		insertscore(playername, gs->score);
 		printf("result saved in %s\n", score_file);
 
 	}

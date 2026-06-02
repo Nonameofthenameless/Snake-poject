@@ -1,0 +1,462 @@
+--------------------------------------------------------------------------------
+  KONCEPT 1  –  CRUD (Create / Read / Update / Insert / Delete)
+  Datoteka: file_io.c
+--------------------------------------------------------------------------------
+
+  CREATE / INSERT  (linija 163)
+    void insetscore(const char *name, int score) {
+        ...
+        g_scoreboard[g_scorecout] = entry;
+        g_scorecout++;
+        savescores();
+    }
+
+  READ  (linija 15)
+    int loadscores(void) {
+        FILE *fp = fopen(score_file, "rb");
+        ...
+        fread(g_scoreboard, sizeof(scoreentry), (size_t)count, fp);
+    }
+
+  UPDATE  (linija 76)
+    int savescores(void) {
+        FILE *fp = fopen(score_file, "wb");
+        fwrite(g_scoreboard, sizeof(scoreentry), (size_t)g_scorecout, fp);
+    }
+
+  DELETE  (linija 131)
+    int delscoresentry(int index) {
+        memmove(&g_scoreboard[index], &g_scoreboard[index + 1], ...);
+        g_scorecout--;
+        return savescores();
+    }
+
+  Datoteka: game.c  (linija 228)
+    if (gs->score > 0) {
+        insetscore(playername, gs->score);
+    }
+
+--------------------------------------------------------------------------------
+  KONCEPT 2  –  Primitivni tipovi podataka
+  Datoteka: snake.h
+--------------------------------------------------------------------------------
+
+  int – cjelobrojni tip  (linija 85)
+    typedef struct {
+        int x;
+        int y;
+    } point;
+
+  long – dovoljan za time_t  (linija 98)
+    typedef struct {
+        long timestamp;
+    } scoreentry;
+
+  float – realni tip  (linija 103)
+    typedef union {
+        float asfloat;
+    } gamevalue;
+
+--------------------------------------------------------------------------------
+  KONCEPT 3  –  Složeni tipovi podataka
+  Datoteka: snake.h
+--------------------------------------------------------------------------------
+
+  (linija 84)
+    typedef struct { int x; int y; } point;
+
+  (linija 89)
+    typedef struct { point cells[max_snak]; int length; direction Direction; } snake;
+
+  (linija 95)
+    typedef struct { char playername[name_len]; int score; long timestamp; } scoreentry;
+
+  (linija 107)
+    typedef struct { snake Snake; point food; int score; int isrunning; gamevalue spare; } gamestate;
+
+--------------------------------------------------------------------------------
+  KONCEPT 4  –  typedef, struct, union, enum
+  Datoteka: snake.h
+--------------------------------------------------------------------------------
+
+  enum  (linija 53)
+    typedef enum { dir_up=0, dir_down, dir_left, dir_right } direction;
+
+  union  (linija 101)
+    typedef union { int asint; float asfloat; char asbytes[4]; } gamevalue;
+
+  union u strukturi  (game.c, linija 47)
+    gs->spare.asint = s_gamesplayed;
+
+--------------------------------------------------------------------------------
+  KONCEPT 5  –  Imenovanje identifikatora
+--------------------------------------------------------------------------------
+
+  camelCase  –  lokalne varijable i parametri
+    gamestate, scoreentry, playername, newhead, isbody, filesize
+
+  PascalCase  –  typedef nazivi struktura i enum-a
+    MainMenueChoice, Snake (polje u gamestate)
+
+  snake_case  –  sve funkcije i globalne varijable
+    loadscores(), savescores(), g_highscore, g_scoreboard, s_gamesplayed
+
+--------------------------------------------------------------------------------
+  KONCEPT 6  –  Ključna riječ static
+  Datoteke: game.c, globals.c, file_io.c
+--------------------------------------------------------------------------------
+
+  static globalna varijabla  (game.c, linija 6)
+    static int s_gamesplayed = 0;
+
+  static lokalna varijabla u globals.c  (linija 14)
+    static struct termios s_origTermios;
+
+  static const varijabla  (file_io.c, linija 9)
+    static const int s_fileversion = 1;
+
+  static tablica pokazivača  (utils.c, linija 59)
+    static cmpfn cmptable[] = { NULL, comparescoredesc, comparescorename, comparescoredate };
+
+--------------------------------------------------------------------------------
+  KONCEPT 7  –  Organizacija izvornog koda
+--------------------------------------------------------------------------------
+
+  Projekt je podijeljen u 7 datoteka:
+    snake.h    –  zajednička zaglavlja, tipovi, deklaracije
+    main.c     –  ulazna točka
+    globals.c  –  definicija globalnih varijabli, raw-mode terminal
+    game.c     –  logika igre
+    file_io.c  –  CRUD operacije nad binarnom datotekom
+    menu.c     –  izbornici i podizbornici
+    utils.c    –  sortiranje, pretraživanje, upravljanje memorijom
+
+--------------------------------------------------------------------------------
+  KONCEPT 8  –  Ključna riječ extern
+  Datoteka: snake.h  (linija 116–118), globals.c  (linija 8–10)
+--------------------------------------------------------------------------------
+
+  Deklaracija u snake.h:
+    extern int         g_highscore;
+    extern scoreentry *g_scoreboard;
+    extern int         g_scorecout;
+
+  Definicija u globals.c:
+    int         g_highscore  = 0;
+    scoreentry *g_scoreboard = NULL;
+    int         g_scorecout  = 0;
+
+--------------------------------------------------------------------------------
+  KONCEPT 9  –  Makro funkcije i inline funkcije
+  Datoteke: snake.h, game.c
+--------------------------------------------------------------------------------
+
+  Makro funkcije  (snake.h, linija 49–52)
+    #define MIN(a, b)          ((a) < (b) ? (a) : (b))
+    #define MAX(a, b)          ((a) > (b) ? (a) : (b))
+    #define in_bounds(x, y)    ((x)>=0 && (x)<board_w && (y)>=0 && (y)<board_h)
+    #define score_how_hungry   10
+
+  inline funkcija  (game.c, linija 9)
+    static inline int pointequal(point a, point b) {
+        return (a.x == b.x && a.y == b.y);
+    }
+
+  inline funkcija  (game.c, linija 17)
+    static inline void placefood(gamestate *gs) { ... }
+
+  Primjena makroa u kodu  (game.c, linija 151)
+    if (!in_bounds(newhead.x, newhead.y)) {
+        gs->isrunning = 0;
+        return;
+    }
+
+--------------------------------------------------------------------------------
+  KONCEPT 10  –  Izbornik i podizbornici
+  Datoteka: menu.c
+--------------------------------------------------------------------------------
+
+  Glavni izbornik  (linija showmainmenue)
+    || 1. New game
+    || 2. High scores
+    || 3. Da rulez
+    || 4. Deleat french langige packet
+    || 5. alt f4
+
+  Podizbornik – rang lista  (linija showscoremenu)
+    1. points
+    2. names
+    3. date
+    0. return
+
+  Podizbornik – brisanje  (linija showdelmenu)
+    Ispis liste, unos rednog broja za brisanje
+
+--------------------------------------------------------------------------------
+  KONCEPT 11  –  enum tipovi i makro simboli za izbornike
+  Datoteka: snake.h
+--------------------------------------------------------------------------------
+
+  Makro konstante  (linija 39–46)
+    #define board_w   20
+    #define board_h   20
+    #define max_snak  (board_w * board_h)
+    #define name_len  32
+    #define score_file "scores.dat"
+    #define ticks_ms  150
+
+  enum za izbornik  (linija 62)
+    typedef enum {
+        menue_play = 1, menue_scores, menue_rules,
+        menue_del_score, menue_alt4f
+    } MainMenueChoice;
+
+  enum za sortiranje  (linija 77)
+    typedef enum { sort_by_score=1, sort_by_name, sort_by_date } sortchoice;
+
+  enum za smjer  (linija 53)
+    typedef enum { dir_up=0, dir_down, dir_left, dir_right } direction;
+
+--------------------------------------------------------------------------------
+  KONCEPT 12  –  Pokazivači
+  Datoteka: game.c  (linija 104)
+--------------------------------------------------------------------------------
+
+    void handleinput(gamestate *gs) {
+        if (gs == NULL || !kb_hit()) return;
+        int ch = get_ch();
+        ...
+    }
+
+  Pokazivač na scoreentry  (file_io.c, linija 50)
+    g_scoreboard = (scoreentry *)tmp;
+
+--------------------------------------------------------------------------------
+  KONCEPT 13  –  Strukture i funkcije
+  Datoteka: game.c
+--------------------------------------------------------------------------------
+
+  initgame   (linija 34)  –  inicijalizacija gamestate strukture
+  drawgame   (linija 59)  –  crtanje ploče iz gamestate
+  handleinput (linija 104) –  čitanje tipkovnice, mijenja gamestate
+  updategame (linija 137) –  ažuriranje logike, pomicanje zmije
+  freegame   (linija 191) –  čišćenje gamestate
+
+--------------------------------------------------------------------------------
+  KONCEPT 14  –  Zaštita parametara
+  Datoteke: game.c, file_io.c, utils.c
+--------------------------------------------------------------------------------
+
+  (game.c, linija 35)
+    if (gs == NULL) return;
+
+  (game.c, linija 105)
+    if (gs == NULL || !kb_hit()) return;
+
+  (file_io.c, linija 132)
+    if (g_scoreboard == NULL || index < 0 || index >= g_scorecout) { return 0; }
+
+  (file_io.c, linija 164)
+    if (name == NULL || score <= 0) return;
+
+  (utils.c, linija 10)
+    if (ptr == NULL || *ptr == NULL) return;
+
+--------------------------------------------------------------------------------
+  KONCEPT 15  –  Statički zauzeta polja
+  Datoteka: snake.h  (linija 89–93), game.c  (linija 167–175)
+--------------------------------------------------------------------------------
+
+  Definicija statičkog polja u strukturi  (snake.h, linija 89)
+    typedef struct {
+        point cells[max_snak];   /* max_snak = 20*20 = 400 */
+        int   length;
+        direction Direction;
+    } snake;
+
+  Pomicanje statičkog polja  (game.c, linija 167)
+    memmove(&gs->Snake.cells[1], &gs->Snake.cells[0],
+            (size_t)(gs->Snake.length - 1) * sizeof(point));
+
+--------------------------------------------------------------------------------
+  KONCEPT 16  –  Dinamičko zauzimanje memorije
+  Datoteka: globals.c  (linija 9), file_io.c  (linija 44, 173)
+--------------------------------------------------------------------------------
+
+  Globalni pokazivač  (globals.c, linija 9)
+    scoreentry *g_scoreboard = NULL;
+
+  Alokacija pri učitavanju  (file_io.c, linija 44)
+    void *tmp = realloc(g_scoreboard, (size_t)count * sizeof(scoreentry));
+    g_scoreboard = (scoreentry *)tmp;
+
+  Proširenje pri insertu  (file_io.c, linija 173)
+    void *tmp = realloc(g_scoreboard, (size_t)(g_scorecout+1) * sizeof(scoreentry));
+
+--------------------------------------------------------------------------------
+  KONCEPT 17  –  malloc, calloc, realloc, free
+  Datoteke: file_io.c, utils.c
+--------------------------------------------------------------------------------
+
+  realloc  (file_io.c, linija 44)
+    void *tmp = realloc(g_scoreboard, (size_t)count * sizeof(scoreentry));
+
+  realloc  (file_io.c, linija 148)
+    void *tmp = realloc(g_scoreboard, (size_t)g_scorecout * sizeof(scoreentry));
+
+  malloc  (file_io.c, linija 221)
+    scoreentry *stmp = (scoreentry *)malloc((size_t)g_scorecout * sizeof(scoreentry));
+
+  free  (file_io.c, linija 229)
+    free(stmp);
+
+  free u safefree  (utils.c, linija 11)
+    free(*ptr);
+
+  Oslobađanje pri izlazu  (main.c, linija 7)
+    safefree((void **)&g_scoreboard);
+
+--------------------------------------------------------------------------------
+  KONCEPT 18  –  Sigurno brisanje memorije, anuliranje pokazivača
+  Datoteke: game.c, file_io.c, utils.c
+--------------------------------------------------------------------------------
+
+  memset na cijeloj strukturi  (game.c, linija 36)
+    memset(gs, 0, sizeof(gamestate));
+
+  memset na obrisanom elementu  (file_io.c, linija 144)
+    memset(&g_scoreboard[g_scorecout - 1], 0, sizeof(scoreentry));
+
+  memset na novom nizu  (file_io.c, linija 51)
+    memset(g_scoreboard, 0, (size_t)count * sizeof(scoreentry));
+
+  Anuliranje pokazivača u safefree  (utils.c, linija 12)
+    void safefree(void **ptr) {
+        free(*ptr);
+        *ptr = NULL;   /* anuliranje – sprječava double free */
+    }
+
+--------------------------------------------------------------------------------
+  KONCEPT 19  –  Datoteke, provjera pokazivača, zatvaranje
+  Datoteka: file_io.c
+--------------------------------------------------------------------------------
+
+  Otvaranje binarne datoteke i provjera  (linija 16)
+    FILE *fp = fopen(score_file, "rb");
+    if (fp == NULL) { ... }
+
+  Zatvaranje datoteke  (linija 59)
+    fclose(fp);
+
+  Provjera greške pisanja  (linija 89)
+    if (ferror(fp) || (int)written != g_scorecout) { ... }
+
+--------------------------------------------------------------------------------
+  KONCEPT 20  –  fseek, ftell, rewind
+  Datoteka: file_io.c  (linija 23–34)
+--------------------------------------------------------------------------------
+
+    fseek(fp, 0L, SEEK_END);       /* pomak na kraj datoteke */
+    long filesize = ftell(fp);     /* čitanje trenutne pozicije */
+    rewind(fp);                    /* povratak na početak */
+
+--------------------------------------------------------------------------------
+  KONCEPT 21  –  remove, rename, kopiranje datoteke
+  Datoteka: file_io.c
+--------------------------------------------------------------------------------
+
+  Kopiranje datoteke (backup)  (linija 101–125)
+    int backupscores(void) {
+        FILE *src = fopen(score_file, "rb");
+        FILE *dst = fopen(backupscore_file, "wb");
+        while ((n = fread(buf, 1, sizeof(buf), src)) > 0)
+            fwrite(buf, 1, n, dst);
+    }
+
+  Brisanje datoteke  (linija 154)
+    if (remove(score_file) != 0)
+        printerror("delscoresentry: remove");
+
+--------------------------------------------------------------------------------
+  KONCEPT 22  –  errno, perror, strerror, ferror, feof
+  Datoteke: file_io.c, utils.c
+--------------------------------------------------------------------------------
+
+  printerror funkcija  (utils.c, linija 16)
+    void printerror(const char *context) {
+        fprintf(stderr, "[ERROR] %s: %s\n", context, strerror(errno));
+    }
+
+  ferror pri čitanju  (file_io.c, linija 54)
+    if (ferror(fp)) { printerror("loadscores: fread"); }
+
+  ferror pri pisanju  (file_io.c, linija 89)
+    if (ferror(fp) || (int)written != g_scorecout) { ... }
+
+--------------------------------------------------------------------------------
+  KONCEPT 23  –  Sortiranje (qsort)
+  Datoteka: utils.c  (linija 56)
+--------------------------------------------------------------------------------
+
+    void sortscoresby(sortchoice choice) {
+        qsort(g_scoreboard, (size_t)g_scorecout, sizeof(scoreentry), cmptable[idx]);
+    }
+
+  Poziv pri ispisu  (file_io.c, linija 196)
+    sortscoresby(sortBy);
+
+--------------------------------------------------------------------------------
+  KONCEPT 24  –  Pretraživanje (bsearch)
+  Datoteka: utils.c  (linija 84)
+--------------------------------------------------------------------------------
+
+    scoreentry *findscore(const char *name) {
+        qsort(g_scoreboard, ...);   /* bsearch zahtijeva sortiran niz */
+        return (scoreentry *)bsearch(&key, g_scoreboard,
+                                     (size_t)g_scorecout, sizeof(scoreentry),
+                                     comparescorename);
+    }
+
+--------------------------------------------------------------------------------
+  KONCEPT 25  –  Rekurzija
+  Datoteke: snake.h  (linija 158), utils.c  (linija 73), file_io.c  (linija 225)
+--------------------------------------------------------------------------------
+
+  Deklaracija  (snake.h, linija 158)
+    int binaryserchscore(const scoreentry *arr, int lo, int hi, int target);
+
+  Implementacija  (utils.c, linija 73)
+    int binaryserchscore(const scoreentry *arr, int lo, int hi, int target) {
+        if (arr == NULL || lo > hi) return -1;
+        int mid = lo + (hi - lo) / 2;
+        if (arr[mid].score == target) return mid;
+        if (arr[mid].score >  target) return binaryserchscore(arr, mid+1, hi, target);
+        return binaryserchscore(arr, lo, mid-1, target);
+    }
+
+  Poziv  (file_io.c, linija 225)
+    int pos = binaryserchscore(stmp, 0, g_scorecout - 1, g_highscore);
+
+--------------------------------------------------------------------------------
+  KONCEPT 26  –  Pokazivači na funkcije
+  Datoteke: snake.h  (linija 121), utils.c  (linija 32–53, 59–64)
+--------------------------------------------------------------------------------
+
+  Typedef pokazivača na funkciju  (snake.h, linija 121)
+    typedef int (*cmpfn)(const void *, const void *);
+
+  Konkretne funkcije (implementacije)  (utils.c, linija 32)
+    int comparescoredesc(const void *a, const void *b) { ... }
+    int comparescorename(const void *a, const void *b) { ... }
+    int comparescoredate(const void *a, const void *b) { ... }
+
+  Tablica pokazivača na funkcije  (utils.c, linija 59)
+    static cmpfn cmptable[] = {
+        NULL,
+        comparescoredesc,
+        comparescorename,
+        comparescoredate
+    };
+
+  Primjena u qsort  (utils.c, linija 69)
+    qsort(g_scoreboard, (size_t)g_scorecout, sizeof(scoreentry), cmptable[idx]);
